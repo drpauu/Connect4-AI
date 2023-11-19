@@ -95,21 +95,17 @@ public class Juga2 extends javax.swing.JFrame {
         //</editor-fold>
 
         // Definiu al vostre gust els jugadors a enfrontar.
-        Jugador p1 = new Manual();
-        //Jugador p1 = new Aleatori();
-
-        Jugador p2 = new Profe(2,false);
-        //Jugador p2 = new Manual();
+        Jugador p1 = new MinimaxPlayer(6); // Using default depth
+        Jugador p2 = new Profe(2, true); // Second player (change as needed)
 
         boolean autoMode = true;
-        final Juga2 j = new Juga2(p1, p2, autoMode);
+        Juga2 game = new Juga2(p2, p1, autoMode);
 
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                j.setVisible(true);
-                j.mostraTornActual();
+                game.setVisible(true);
+                game.mostraTornActual();
             }
         });
     }
