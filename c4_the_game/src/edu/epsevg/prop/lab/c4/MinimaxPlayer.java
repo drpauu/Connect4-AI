@@ -215,105 +215,131 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
     }
 
 
-    private int avaluarDiagonals(Tauler t) {
-        int res = 0;
-
-        res = processDiagonalFromTopLeft(t, res);
-        res = processDiagonalFromTopRight(t, res);
-
-        return res;
-    }
-
-    private int processDiagonalFromTopLeft(Tauler t, int res) {
-        int col = t.getMida() - 4, fil = 0;
-
-        while (fil < t.getMida() - 2) {
-            res = evaluateDiagonal(t, fil, col, res, true);
-            if (col > 0) {
-                col--;
-            } else {
-                fil++;
+    private int avaluarDiagonals(Tauler t){
+    //Pre: 
+    //Post: Retorna l'heuristica diagonal pel tauler sencer (veure documentacio per mes detalls)
+        int col = t.getMida()-4, fil = 0, res = 0;
+        while(fil < t.getMida()-2){
+            int cont_buides = 0,cont = 0,color_actual = 0,color_aux = 0;
+            for(int i = 0; i+col < t.getMida() && i+fil < t.getMida(); ++i){
+                int fitxa = t.getColor(fil+i, col+i);
+                if(fitxa == 0){
+                    if(color_actual != 0){
+                        if(cont+cont_buides>3){
+                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
+                        }
+                            color_aux = color_actual;
+                            color_actual = 0;
+                            cont_buides = 1;
+                    }else{
+                        ++cont_buides;
+                        if(cont+cont_buides>3){
+                            res+=(int)(colorJugador*color_aux*(Math.pow(10.0,cont-1)));
+                            color_aux = 0;
+                        }
+                    }
+                }else{
+                    if(fitxa == color_actual){
+                        ++cont;
+                        if(cont>3)
+                            return colorJugador*color_actual*HEURISTICA_MAXIMA;
+                    }
+                    else if(color_actual == 0){
+                        color_actual = fitxa;
+                        cont = 1;
+                    }else{
+                        if(cont+cont_buides>3){
+                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
+                        }
+                            color_actual *=-1;
+                            cont = 1;
+                            cont_buides = 0;
+                    }
+                }
+            }
+            if(cont+cont_buides>3){
+                    res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
+            }
+            if(col>0)
+                --col;
+            else
+                ++fil;
+        }
+        col = 3;
+        fil = 0;
+        while(fil<t.getMida()-2){
+            int cont_buides = 0,cont = 0,color_actual = 0,color_aux = 0;
+            for(int i = 0; col-i > 0 && i+fil < t.getMida(); ++i){
+                int fitxa = t.getColor(fil+i, col-i);
+                if(fitxa == 0){
+                    if(color_actual != 0){
+                        if(cont+cont_buides>3){
+                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
+                        }
+                            color_aux = color_actual;
+                            color_actual = 0;
+                            cont_buides = 1;
+                    }else{
+                        ++cont_buides;
+                        if(cont+cont_buides>3){
+                            res+=(int)(colorJugador*color_aux*(Math.pow(10.0,cont-1)));
+                            color_aux = 0;
+                        }
+                    }
+                }else{
+                    if(fitxa == color_actual){
+                        ++cont;
+                        if(cont>3)
+                            return colorJugador*color_actual*HEURISTICA_MAXIMA;
+                    }
+                    else if(color_actual == 0){
+                        color_actual = fitxa;
+                        cont = 1;
+                    }else{
+                        if(cont+cont_buides>3){
+                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
+                        }
+                            color_actual *=-1;
+                            cont = 1;
+                            cont_buides = 0;
+                    }
+                }
+            }
+            if(cont+cont_buides>3){
+                    res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
+            }
+            ++col;
+            if(col==t.getMida()){
+                --col;
+                ++fil;
             }
         }
-
         return res;
     }
-
-    private int processDiagonalFromTopRight(Tauler t, int res) {
-        int col = 3, fil = 0;
-
-        while (fil < t.getMida() - 2) {
-            res = evaluateDiagonal(t, fil, col, res, false);
-            col++;
-            if (col == t.getMida()) {
-                col--;
-                fil++;
-            }
-        }
-
-        return res;
-    }
-
-    private int evaluateDiagonal(Tauler t, int fil, int col, int res, boolean isLeftDiagonal) {
-        int cont_buides = 0, cont = 0, color_actual = 0, color_aux = 0;
-
-        for (int i = 0; isWithinBounds(t, i, col, fil, isLeftDiagonal); i++) {
-            int fitxa = isLeftDiagonal ? t.getColor(fil + i, col + i) : t.getColor(fil + i, col - i);
-
-            // process logic here (same as in original function)
-            // remember to handle 'return colorJugador*color_actual*HEURISTICA_MAXIMA;' case
-
-            // Update res, cont, cont_buides, color_actual, and color_aux according to the original logic
-        }
-
-        return updateResAfterDiagonal(cont, cont_buides, color_actual, res);
-    }
-
-    private boolean isWithinBounds(Tauler t, int i, int col, int fil, boolean isLeftDiagonal) {
-        return isLeftDiagonal ? i + col < t.getMida() && i + fil < t.getMida() : col - i >= 0 && i + fil < t.getMida();
-    }
-
-    private int updateResAfterDiagonal(int cont, int cont_buides, int color_actual, int res) {
-        if (cont + cont_buides > 3) {
-            res += (int)(colorJugador * color_actual * Math.pow(10.0, cont - 1));
-        }
-        return res;
-    }
-
 
     private int valorMaxim(Tauler t, int col, int alfa, int beta, int profunditat) {
         if (t.solucio(col, -colorJugador)) {
             return -HEURISTICA_MAXIMA;
         }
-        if (profunditat > 0) {
-            return evaluateWithDepth(t, alfa, beta, profunditat);
-        } else {
-            return avaluarTauler(t);
-        }
+
+        return profunditat > 0 ? calculateMaxValueWithDepth(t, alfa, beta, profunditat) : avaluarTauler(t);
     }
 
-    private int evaluateWithDepth(Tauler t, int alfa, int beta, int profunditat) {
+    private int calculateMaxValueWithDepth(Tauler t, int alfa, int beta, int profunditat) {
         Integer valor = -HEURISTICA_MAXIMA - 1;
+        for (int i = 0; i < t.getMida(); ++i) {
+            if (!t.movpossible(i)) continue;
 
-        for (int i = 0; i < t.getMida(); i++) {
-            valor = evaluateMove(t, i, valor, alfa, beta, profunditat);
+            Tauler aux = new Tauler(t);
+            aux.afegeix(i, colorJugador);
+            valor = Math.max(valor, valorMinim(aux, i, alfa, beta, profunditat - 1));
+
             if (beta <= valor) {
                 break;
             }
-            alfa = Math.max(valor, alfa);
+            alfa = Math.max(alfa, valor);
         }
-
         return valor;
-    }
-
-    private int evaluateMove(Tauler t, int i, int valor, int alfa, int beta, int profunditat) {
-        if (!t.movpossible(i)) {
-            return valor;
-        }
-        Tauler aux = new Tauler(t);
-        aux.afegeix(i, colorJugador);
-        int newValue = valorMinim(aux, i, alfa, beta, profunditat - 1);
-        return Math.max(valor, newValue);
     }
 
 
@@ -322,37 +348,24 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
             return HEURISTICA_MAXIMA;
         }
 
-        if (profunditat <= 0) {
-            return avaluarTauler(t);
-        }
-
-        return calculateMinValue(t, alfa, beta, profunditat);
+        return profunditat > 0 ? evaluateWithDepth(t, alfa, beta, profunditat) : avaluarTauler(t);
     }
 
-    private int calculateMinValue(Tauler t, int alfa, int beta, int profunditat) {
+    private int evaluateWithDepth(Tauler t, int alfa, int beta, int profunditat) {
         Integer valor = HEURISTICA_MAXIMA - 1;
-
         for (int i = 0; i < t.getMida(); i++) {
-            if (!t.movpossible(i)) {
-                continue;
-            }
+            if (!t.movpossible(i)) continue;
 
             Tauler aux = new Tauler(t);
             aux.afegeix(i, -colorJugador);
-            valor = updateValueForMin(aux, i, valor, alfa, beta, profunditat);
+            valor = Math.min(valor, valorMaxim(aux, i, alfa, beta, profunditat - 1));
 
             if (valor < alfa) {
-                return valor;
+                break;
             }
-
             beta = Math.min(valor, beta);
         }
-
         return valor;
-    }
-
-    private int updateValueForMin(Tauler t, int i, int valor, int alfa, int beta, int profunditat) {
-        return Math.min(valor, valorMaxim(t, i, alfa, beta, profunditat - 1));
     }
 
 
