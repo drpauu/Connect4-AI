@@ -215,106 +215,63 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
     }
 
 
-    private int avaluarDiagonals(Tauler t){
-    //Pre: 
-    //Post: Retorna l'heuristica diagonal pel tauler sencer (veure documentacio per mes detalls)
-        int col = t.getMida()-4, fil = 0, res = 0;
-        while(fil < t.getMida()-2){
-            int cont_buides = 0,cont = 0,color_actual = 0,color_aux = 0;
-            for(int i = 0; i+col < t.getMida() && i+fil < t.getMida(); ++i){
-                int fitxa = t.getColor(fil+i, col+i);
-                if(fitxa == 0){
-                    if(color_actual != 0){
-                        if(cont+cont_buides>3){
-                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
-                        }
-                            color_aux = color_actual;
-                            color_actual = 0;
-                            cont_buides = 1;
-                    }else{
-                        ++cont_buides;
-                        if(cont+cont_buides>3){
-                            res+=(int)(colorJugador*color_aux*(Math.pow(10.0,cont-1)));
-                            color_aux = 0;
-                        }
-                    }
-                }else{
-                    if(fitxa == color_actual){
-                        ++cont;
-                        if(cont>3)
-                            return colorJugador*color_actual*HEURISTICA_MAXIMA;
-                    }
-                    else if(color_actual == 0){
-                        color_actual = fitxa;
-                        cont = 1;
-                    }else{
-                        if(cont+cont_buides>3){
-                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
-                        }
-                            color_actual *=-1;
-                            cont = 1;
-                            cont_buides = 0;
-                    }
-                }
+    private int avaluarDiagonals(Tauler t) {
+        int res = 0;
+        // Evaluate descending diagonals
+        for (int col = t.getMida() - 4, fil = 0; fil < t.getMida() - 2; ) {
+            res += evaluateDiagonal(t, col, fil, true);
+            if (col > 0) {
+                col--;
+            } else {
+                fil++;
             }
-            if(cont+cont_buides>3){
-                    res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
-            }
-            if(col>0)
-                --col;
-            else
-                ++fil;
         }
-        col = 3;
-        fil = 0;
-        while(fil<t.getMida()-2){
-            int cont_buides = 0,cont = 0,color_actual = 0,color_aux = 0;
-            for(int i = 0; col-i > 0 && i+fil < t.getMida(); ++i){
-                int fitxa = t.getColor(fil+i, col-i);
-                if(fitxa == 0){
-                    if(color_actual != 0){
-                        if(cont+cont_buides>3){
-                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
-                        }
-                            color_aux = color_actual;
-                            color_actual = 0;
-                            cont_buides = 1;
-                    }else{
-                        ++cont_buides;
-                        if(cont+cont_buides>3){
-                            res+=(int)(colorJugador*color_aux*(Math.pow(10.0,cont-1)));
-                            color_aux = 0;
-                        }
-                    }
-                }else{
-                    if(fitxa == color_actual){
-                        ++cont;
-                        if(cont>3)
-                            return colorJugador*color_actual*HEURISTICA_MAXIMA;
-                    }
-                    else if(color_actual == 0){
-                        color_actual = fitxa;
-                        cont = 1;
-                    }else{
-                        if(cont+cont_buides>3){
-                            res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
-                        }
-                            color_actual *=-1;
-                            cont = 1;
-                            cont_buides = 0;
-                    }
-                }
-            }
-            if(cont+cont_buides>3){
-                    res+=(int)(colorJugador*color_actual*(Math.pow(10.0,cont-1)));
-            }
-            ++col;
-            if(col==t.getMida()){
-                --col;
-                ++fil;
+        // Evaluate ascending diagonals
+        for (int col = 3, fil = 0; fil < t.getMida() - 2; ) {
+            res += evaluateDiagonal(t, col, fil, false);
+            if (col < t.getMida() - 1) {
+                col++;
+            } else {
+                fil++;
             }
         }
         return res;
+    }
+
+    private int evaluateDiagonal(Tauler t, int col, int fil, boolean isDescending) {
+        int cont_buides = 0, cont = 0, color_actual = 0, res = 0;
+        for (int i = 0; (isDescending ? i + col < t.getMida() : col - i >= 0) && i + fil < t.getMida(); i++) {
+            int fitxa = t.getColor(fil + i, isDescending ? col + i : col - i);
+            if (fitxa == 0) {
+                cont_buides++;
+                if (color_actual != 0 && cont + cont_buides > 3) {
+                    res += calculateHeuristic(colorJugador, color_actual, cont);
+                }
+                color_actual = 0;
+            } else {
+                if (fitxa == color_actual) {
+                    cont++;
+                    if (cont > 3) {
+                        return colorJugador * color_actual * HEURISTICA_MAXIMA;
+                    }
+                } else {
+                    if (color_actual != 0 && cont + cont_buides > 3) {
+                        res += calculateHeuristic(colorJugador, color_actual, cont);
+                    }
+                    color_actual = fitxa;
+                    cont = 1;
+                    cont_buides = 0;
+                }
+            }
+        }
+        if (color_actual != 0 && cont + cont_buides > 3) {
+            res += calculateHeuristic(colorJugador, color_actual, cont);
+        }
+        return res;
+    }
+
+    private int calculateHeuristic(int colorJugador, int color_actual, int cont) {
+        return (int) (colorJugador * color_actual * Math.pow(10.0, cont - 1));
     }
 
     private int valorMaxim(Tauler t, int col, int alfa, int beta, int profunditat) {
