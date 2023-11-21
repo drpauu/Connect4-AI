@@ -10,7 +10,7 @@ public class MinimaxPlayer implements Jugador , IAuto {
 
     public MinimaxPlayer(int profunditat) {
         this.profunditatRecerca = profunditat;
-        nomJugador = "Mariona & Pau's player amb la profunditat de: (" + profunditat + ")";
+        nomJugador = "Mariona & Pau's player amb la profunditat de: " + profunditat;
     }
 
     public MinimaxPlayer(int profunditat, boolean estats) {
@@ -21,7 +21,7 @@ public class MinimaxPlayer implements Jugador , IAuto {
     public MinimaxPlayer() {
         int profunditat = 5;
         this.profunditatRecerca = profunditat;
-        nomJugador = "Mariona & Pau's player amb la profunditat de: (" + profunditat + ")";
+        nomJugador = "Mariona & Pau's player amb la profunditat de: " + profunditat;
     }
 
     @Override
