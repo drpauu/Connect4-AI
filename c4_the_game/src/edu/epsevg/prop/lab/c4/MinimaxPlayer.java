@@ -1,14 +1,12 @@
 package edu.epsevg.prop.lab.c4;
 
 public class MinimaxPlayer implements Jugador , IAuto {
-    final private int HEURISTICA_MAXIMA = 10000000;
+    final private int HEURISTICA_MAXIMA = Integer.MAX_VALUE;
     private int colorJugador;
     private String nomJugador;
     private int profunditatRecerca;
     private int jugadesExplorades;
     private int jugadesReals;
-    private double tempsAcumulat = 0;
-    private boolean mostrarEstadistiques = true;
 
     public MinimaxPlayer(int profunditat) {
         this.profunditatRecerca = profunditat;
@@ -17,12 +15,11 @@ public class MinimaxPlayer implements Jugador , IAuto {
 
     public MinimaxPlayer(int profunditat, boolean estats) {
         this(profunditat);
-        this.mostrarEstadistiques = estats;
     }
     
     // per si es crida malament i no es posa res, posem una profunditat per defecte
     public MinimaxPlayer() {
-        int profunditat = 4;
+        int profunditat = 5;
         this.profunditatRecerca = profunditat;
         nomJugador = "Mariona & Pau's player amb la profunditat de: (" + profunditat + ")";
     }
@@ -36,29 +33,12 @@ public class MinimaxPlayer implements Jugador , IAuto {
     public int moviment(Tauler tauler, int colorJugador) {
         this.colorJugador = colorJugador;
 
-        if (!mostrarEstadistiques) {
-            return calcularMinimax(tauler, profunditatRecerca);
-        }
-
         jugadesExplorades = 0;  
         jugadesReals++;
-        long tempsInici = System.currentTimeMillis();
         int columna = calcularMinimax(tauler, profunditatRecerca);
-        logEstadistiques(tempsInici, columna);
 
         return columna;
     }
-
-    private void logEstadistiques(long tempsInici, int columna) {
-        long tempsFinal = System.currentTimeMillis();
-        double tempsUtilitzat = (tempsFinal - tempsInici) / 1000.0;
-        tempsAcumulat += tempsUtilitzat;
-
-        System.out.println("Columna escollida: " + columna + " després d'explorar " + jugadesExplorades + " jugades.");
-        System.out.printf("Temps utilitzat per decidir: %.3f segons.%n", tempsUtilitzat);
-        System.out.printf("Temps mitjà per jugada: %.4f segons.%n", tempsAcumulat / jugadesReals);
-    }
-
 
     private int calcularMinimax(Tauler t, int profunditat) {
         int col = 0;
