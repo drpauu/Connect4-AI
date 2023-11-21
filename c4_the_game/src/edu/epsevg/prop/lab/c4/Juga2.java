@@ -95,13 +95,9 @@ public class Juga2 extends javax.swing.JFrame {
         //</editor-fold>
 
         // Definiu al vostre gust els jugadors a enfrontar.
-<<<<<<< HEAD
+
         Jugador p1 = new MinimaxPlayer(); // Using default depth
         Jugador p2 = new Profe(4, true); // Second player (change as needed)
-=======
-        Jugador p1 = new MinimaxPlayer(4); // Using default depth
-        Jugador p2 = new Profe(2, false); // Second player (change as needed)
->>>>>>> 4a12b12f2f9fa878507a3bafdd91edfe300ec039
 
         boolean autoMode = true;
         Juga2 game = new Juga2(p1, p2, autoMode);
