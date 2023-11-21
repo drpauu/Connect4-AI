@@ -22,7 +22,7 @@ public class MinimaxPlayer implements Jugador , IAuto {
     
     // per si es crida malament i no es posa res, posem una profunditat per defecte
     public MinimaxPlayer() {
-        int profunditat = 2;
+        int profunditat = 4;
         this.profunditatRecerca = profunditat;
         nomJugador = "Mariona & Pau's player amb la profunditat de: (" + profunditat + ")";
     }
