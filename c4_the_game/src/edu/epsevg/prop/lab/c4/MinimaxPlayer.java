@@ -1,34 +1,62 @@
 package edu.epsevg.prop.lab.c4;
 
-public class MinimaxPlayer implements Jugador , IAuto {
-    final private int HEURISTICA_MAXIMA = Integer.MAX_VALUE;
-    private int colorJugador;
-    private String nomJugador;
-    private int profunditatRecerca;
-    private int jugadesExplorades;
-    private int jugadesReals;
+/**
+ * Classe MinimaxPlayer que implementa l'algorisme Minimax amb poda Alpha-Beta
+ * per al joc Connecta 4.
+ */
+public class MinimaxPlayer implements Jugador, IAuto {
+    final private int HEURISTICA_MAXIMA = Integer.MAX_VALUE; // Valor màxim per a l'heurística
+    private int colorJugador; // Color actual del jugador
+    private String nomJugador; // Nom del jugador
+    private int profunditatRecerca; // Profunditat de recerca per a l'algorisme Minimax
+    private int jugadesExplorades; // Comptador de jugades explorades
+    private int jugadesReals; // Comptador de jugades reals
+    private boolean estats = true;
 
+    /**
+     * Constructor de MinimaxPlayer amb profunditat específica.
+     * @param profunditat Profunditat de recerca per a l'algorisme Minimax.
+     */
     public MinimaxPlayer(int profunditat) {
         this.profunditatRecerca = profunditat;
         nomJugador = "Mariona & Pau's player amb la profunditat de: " + profunditat;
     }
 
-    public MinimaxPlayer(int profunditat, boolean estats) {
+    /**
+     * Constructor sobrecarregat de MinimaxPlayer amb opcions d'estats.
+     * @param profunditat Profunditat de recerca.
+     * @param stats Si s'han de mostrar estadístiques.
+     */
+    public MinimaxPlayer(int profunditat, boolean stats) {
+        this.estats = stats;
         this(profunditat);
+        nomJugador = "Mariona & Pau's player amb la profunditat de: " + profunditat;
     }
-    
-    // per si es crida malament i no es posa res, posem una profunditat per defecte
+
+    /**
+     * Constructor per defecte de MinimaxPlayer amb profunditat predefinida.
+     */
     public MinimaxPlayer() {
         int profunditat = 5;
         this.profunditatRecerca = profunditat;
         nomJugador = "Mariona & Pau's player amb la profunditat de: " + profunditat;
     }
 
+    /**
+     * Retorna el nom del jugador.
+     * @return Nom del jugador.
+     */
     @Override
     public String nom() {
         return nomJugador;
     }
 
+    /**
+     * Realitza un moviment en el tauler.
+     * @param tauler El tauler actual del joc.
+     * @param colorJugador El color del jugador actual.
+     * @return La columna on realitzar el moviment.
+     */
     @Override
     public int moviment(Tauler tauler, int colorJugador) {
         this.colorJugador = colorJugador;
@@ -39,7 +67,12 @@ public class MinimaxPlayer implements Jugador , IAuto {
 
         return columna;
     }
-
+    /**
+     * Implementa l'algorisme Minimax amb poda Alpha-Beta.
+     * @param t El tauler actual del joc.
+     * @param profunditat La profunditat actual de recerca.
+     * @return La millor columna per a moure's segons l'algorisme.
+     */
     private int calcularMinimax(Tauler t, int profunditat) {
         int col = 0;
         Integer valor = -HEURISTICA_MAXIMA - 1;
@@ -48,7 +81,16 @@ public class MinimaxPlayer implements Jugador , IAuto {
 
         return mirarColumnes(t, profunditat, col, valor, alfa, beta);
     }
-
+    /**
+     * Explora totes les columnes del tauler per trobar el millor moviment següent.
+     * @param t El tauler actual.
+     * @param profunditat Profunditat actual de recerca.
+     * @param col Columna actual a explorar.
+     * @param valor Millor valor trobat fins ara.
+     * @param alfa Millor valor que el maximizador pot garantir.
+     * @param beta Millor valor que el minimizador pot garantir.
+     * @return La millor columna per realitzar un moviment.
+     */
     private int mirarColumnes(Tauler t, int profunditat, int col, Integer valor, int alfa, int beta) {
         for (int i = 0; i < t.getMida(); i++) {
             if (!t.movpossible(i)) continue;
@@ -68,7 +110,11 @@ public class MinimaxPlayer implements Jugador , IAuto {
         return col;
     }
 
-
+    /**
+     * Avalua l'estat actual del tauler de joc.
+     * @param t El tauler de joc actual.
+     * @return Puntuació heurística de l'estat actual del tauler.
+     */
     private int avaluarTauler(Tauler t) {
         ++jugadesExplorades;
         int res = 0;
@@ -103,6 +149,15 @@ public class MinimaxPlayer implements Jugador , IAuto {
         return eC(t, col, first, cont, cont_buides);
     }
 
+    /**
+     * Ajuda en l'avaluació de la columna donada.
+     * @param t Tauler de joc.
+     * @param col Número de la columna a avaluar.
+     * @param first Primera fitxa trobada a la columna.
+     * @param cont Comptador de fitxes consecutives.
+     * @param cont_buides Comptador d'espais buits.
+     * @return Puntuació calculada per la columna.
+     */
     private int eC(Tauler t, int col, Integer first, Integer cont, Integer cont_buides) {
         for (int i = t.getMida() - 1; i >= 0; --i) {
             int fitxa = t.getColor(i, col);
@@ -126,26 +181,42 @@ public class MinimaxPlayer implements Jugador , IAuto {
         }
 
         return calcH(first, cont, cont_buides);
-}
+    }
 
-private boolean bingo(Integer cont) {
-    return cont > 3 || cont < -3;
-}
+    private boolean bingo(Integer cont) {
+        return cont > 3 || cont < -3;
+    }
 
-private int calcH(Integer first, Integer cont, Integer cont_buides) {
-    if (cont == 0 || cont_buides + first * cont < 4)
-        return 0;
+    private int calcH(Integer first, Integer cont, Integer cont_buides) {
+        if (cont == 0 || cont_buides + first * cont < 4)
+            return 0;
 
-    return (int) (colorJugador * first * (Math.pow(10.0, first * (cont - first))));
-}
+        return (int) (colorJugador * first * (Math.pow(10.0, first * (cont - first))));
+    }
 
-
+    /**
+     * Avalua les files del tauler.
+     * @param t Tauler de joc.
+     * @param fil Número de la fila a avaluar.
+     * @return Puntuació heurística de la fila.
+     */
     private int avaluarFila(Tauler t, int fil) {
         int cont_buides = 0, cont = 0, color_actual = 0, res = 0, color_aux = 0;
 
         return mirarFila(t, fil, cont_buides, cont, color_actual, res, color_aux);
     }
 
+    /**
+     * Processa la fila donada per determinar la seva puntuació.
+     * @param t Tauler de joc.
+     * @param fil Número de la fila a processar.
+     * @param cont_buides Comptador d'espais buits.
+     * @param cont Comptador de fitxes consecutives.
+     * @param color_actual Color de la fitxa actual.
+     * @param res Puntuació acumulada.
+     * @param color_aux Color auxiliar per a l'avaluació.
+     * @return Puntuació calculada per la fila.
+     */
     private int mirarFila(Tauler t, int fil, int cont_buides, int cont, int color_actual, int res, int color_aux) {
         for (int i = t.getMida() - 1; i >= 0; --i) {
             int fitxa = t.getColor(fil, i);
@@ -194,7 +265,14 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         return (int) (colorJugador * color * Math.pow(10.0, exponent));
     }
 
-
+    /**
+     * Avalua les diagonals del tauler per a determinar la millor jugada.
+     * Aquest mètode examina tant les diagonals ascendents com les descendents
+     * i calcula la puntuació basant-se en les oportunitats de connexió.
+     *
+     * @param t El tauler de joc.
+     * @return La puntuació heurística de les diagonals del tauler.
+     */
     private int avaluarDiagonals(Tauler t) {
         int res = 0;
         // Evaluate descending diagonals
@@ -218,6 +296,17 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         return res;
     }
 
+    /**
+     * Ajuda en l'avaluació de la diagonal específica del tauler.
+     * Calcula la puntuació heurística basada en les seqüències de fitxes
+     * i els espais buits en una diagonal específica.
+     *
+     * @param t El tauler de joc.
+     * @param col La columna inicial de la diagonal a avaluar.
+     * @param fil La fila inicial de la diagonal a avaluar.
+     * @param isDescending Cert si la diagonal és descendent, fals si és ascendent.
+     * @return La puntuació heurística de la diagonal específica.
+     */
     private int eD(Tauler t, int col, int fil, boolean isDescending) {
         int cont_buides = 0, cont = 0, color_actual = 0, res = 0;
         for (int i = 0; (isDescending ? i + col < t.getMida() : col - i >= 0) && i + fil < t.getMida(); i++) {
@@ -254,6 +343,18 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         return (int) (colorJugador * color_actual * Math.pow(10.0, cont - 1));
     }
 
+    /**
+     * Determina el valor màxim que el jugador pot aconseguir en el tauler donat,
+     * considerant els moviments futurs de l'oponent.
+     * Utilitza l'algorisme Minimax amb poda Alpha-Beta.
+     *
+     * @param t El tauler de joc.
+     * @param col La columna de l'últim moviment.
+     * @param alfa El millor valor que el maximizador pot garantir fins ara.
+     * @param beta El millor valor que el minimizador pot garantir fins ara.
+     * @param profunditat La profunditat actual de recerca en l'arbre de joc.
+     * @return El valor màxim que el jugador pot garantir amb el millor moviment.
+     */
     private int valorMaxim(Tauler t, int col, int alfa, int beta, int profunditat) {
         if (t.solucio(col, -colorJugador)) {
             return -HEURISTICA_MAXIMA;
@@ -262,6 +363,16 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         return profunditat > 0 ? maxV(t, alfa, beta, profunditat) : avaluarTauler(t);
     }
 
+    /**
+     * Ajuda en el càlcul del valor màxim en una profunditat específica de l'arbre de joc.
+     * Utilitza recursivitat per explorar els moviments futurs i aplica la poda Alpha-Beta.
+     *
+     * @param t El tauler de joc.
+     * @param alfa El millor valor que el maximizador pot garantir fins ara.
+     * @param beta El millor valor que el minimizador pot garantir fins ara.
+     * @param profunditat La profunditat actual de recerca en l'arbre de joc.
+     * @return El valor màxim possible en aquesta profunditat.
+     */
     private int maxV(Tauler t, int alfa, int beta, int profunditat) {
         Integer valor = -HEURISTICA_MAXIMA - 1;
         for (int i = 0; i < t.getMida(); ++i) {
@@ -279,7 +390,18 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         return valor;
     }
 
-
+    /**
+     * Determina el valor mínim que l'oponent pot forçar en el tauler donat,
+     * considerant els moviments futurs del jugador.
+     * Utilitza l'algorisme Minimax amb poda Alpha-Beta.
+     *
+     * @param t El tauler de joc.
+     * @param col La columna de l'últim moviment.
+     * @param alfa El millor valor que el maximizador pot garantir fins ara.
+     * @param beta El millor valor que el minimizador pot garantir fins ara.
+     * @param profunditat La profunditat actual de recerca en l'arbre de joc.
+     * @return El valor mínim que l'oponent pot garantir amb el millor moviment.
+     */
     private int valorMinim(Tauler t, int col, int alfa, int beta, int profunditat) {
         if (t.solucio(col, colorJugador)) {
             return HEURISTICA_MAXIMA;
@@ -288,6 +410,16 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         return profunditat > 0 ? eProf(t, alfa, beta, profunditat) : avaluarTauler(t);
     }
 
+    /**
+     * Ajuda en el càlcul del valor mínim en una profunditat específica de l'arbre de joc.
+     * Utilitza recursivitat per explorar els moviments futurs i aplica la poda Alpha-Beta.
+     *
+     * @param t El tauler de joc.
+     * @param alfa El millor valor que el maximizador pot garantir fins ara.
+     * @param beta El millor valor que el minimizador pot garantir fins ara.
+     * @param profunditat La profunditat actual de recerca en l'arbre de joc.
+     * @return El valor mínim possible en aquesta profunditat.
+     */
     private int eProf(Tauler t, int alfa, int beta, int profunditat) {
         Integer valor = HEURISTICA_MAXIMA - 1;
         for (int i = 0; i < t.getMida(); i++) {
@@ -304,6 +436,4 @@ private int calcH(Integer first, Integer cont, Integer cont_buides) {
         }
         return valor;
     }
-
-
 }
