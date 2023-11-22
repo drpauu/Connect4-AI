@@ -29,7 +29,7 @@ public class MinimaxPlayer implements Jugador, IAuto {
      */
     public MinimaxPlayer(int profunditat, boolean stats) {
         this.estats = stats;
-        this(profunditat);
+        this.profunditatRecerca = profunditat;
         nomJugador = "Mariona & Pau's player amb la profunditat de: " + profunditat;
     }
 
@@ -59,11 +59,21 @@ public class MinimaxPlayer implements Jugador, IAuto {
      */
     @Override
     public int moviment(Tauler tauler, int colorJugador) {
+        
+        if(estats == true){
+            jugadesExplorades = 0;
+            jugadesReals++;
+            int act_jug = calcularMinimax(tauler, profunditatRecerca);
+            System.out.println("# de nodes explorats: " + jugadesExplorades);
+            System.out.println("columna escollida per fer el moviment: " + act_jug);     
+        }
+        
         this.colorJugador = colorJugador;
 
         jugadesExplorades = 0;  
         jugadesReals++;
         int columna = calcularMinimax(tauler, profunditatRecerca);
+        // és redundant però ho he fet al principi i així ho veig més clar
 
         return columna;
     }
