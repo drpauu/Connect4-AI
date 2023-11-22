@@ -46,10 +46,10 @@ public class MinimaxPlayer implements Jugador , IAuto {
         int alfa = -HEURISTICA_MAXIMA;
         int beta = HEURISTICA_MAXIMA;
 
-        return processColumns(t, profunditat, col, valor, alfa, beta);
+        return mirarColumnes(t, profunditat, col, valor, alfa, beta);
     }
 
-    private int processColumns(Tauler t, int profunditat, int col, Integer valor, int alfa, int beta) {
+    private int mirarColumnes(Tauler t, int profunditat, int col, Integer valor, int alfa, int beta) {
         for (int i = 0; i < t.getMida(); i++) {
             if (!t.movpossible(i)) continue;
 
@@ -72,14 +72,14 @@ public class MinimaxPlayer implements Jugador , IAuto {
     private int avaluarTauler(Tauler t) {
         ++jugadesExplorades;
         int res = 0;
-        res = processRowsAndColumns(t, res);
+        res = mirarFiC(t, res);
 
         res += avaluarDiagonals(t);
 
-        return adjustResultAccordingToHeuristica(res);
+        return mirarHeuristica(res);
     }
 
-    private int processRowsAndColumns(Tauler t, int res) {
+    private int mirarFiC(Tauler t, int res) {
         for (int i = t.getMida() - 1; i >= 0; --i) {
             res += avaluarColumna(t, i);
             res += (10 * avaluarFila(t, i) / (i + 1));  // Ponderem segons l'alçada del 4 en ratlla horitzontal
@@ -87,7 +87,7 @@ public class MinimaxPlayer implements Jugador , IAuto {
         return res;
     }
 
-    private int adjustResultAccordingToHeuristica(int res) {
+    private int mirarHeuristica(int res) {
         if (res >= HEURISTICA_MAXIMA / 2) 
             return HEURISTICA_MAXIMA;
         if (res <= -HEURISTICA_MAXIMA / 2) 
@@ -100,10 +100,10 @@ public class MinimaxPlayer implements Jugador , IAuto {
     private int avaluarColumna(Tauler t, int col) {
         Integer first = 0, cont = 0, cont_buides = 0;
 
-        return evaluateColumn(t, col, first, cont, cont_buides);
+        return eC(t, col, first, cont, cont_buides);
     }
 
-    private int evaluateColumn(Tauler t, int col, Integer first, Integer cont, Integer cont_buides) {
+    private int eC(Tauler t, int col, Integer first, Integer cont, Integer cont_buides) {
         for (int i = t.getMida() - 1; i >= 0; --i) {
             int fitxa = t.getColor(i, col);
             if (fitxa == 0) {
@@ -117,7 +117,7 @@ public class MinimaxPlayer implements Jugador , IAuto {
 
             if (first == fitxa) {
                 cont += fitxa;
-                if (isFourInARow(cont)) {
+                if (bingo(cont)) {
                     return colorJugador * first * HEURISTICA_MAXIMA;
                 }
             } else {
@@ -125,14 +125,14 @@ public class MinimaxPlayer implements Jugador , IAuto {
             }
         }
 
-        return calculateHeuristic(first, cont, cont_buides);
+        return calcH(first, cont, cont_buides);
 }
 
-private boolean isFourInARow(Integer cont) {
+private boolean bingo(Integer cont) {
     return cont > 3 || cont < -3;
 }
 
-private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides) {
+private int calcH(Integer first, Integer cont, Integer cont_buides) {
     if (cont == 0 || cont_buides + first * cont < 4)
         return 0;
 
@@ -143,19 +143,19 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
     private int avaluarFila(Tauler t, int fil) {
         int cont_buides = 0, cont = 0, color_actual = 0, res = 0, color_aux = 0;
 
-        return processRow(t, fil, cont_buides, cont, color_actual, res, color_aux);
+        return mirarFila(t, fil, cont_buides, cont, color_actual, res, color_aux);
     }
 
-    private int processRow(Tauler t, int fil, int cont_buides, int cont, int color_actual, int res, int color_aux) {
+    private int mirarFila(Tauler t, int fil, int cont_buides, int cont, int color_actual, int res, int color_aux) {
         for (int i = t.getMida() - 1; i >= 0; --i) {
             int fitxa = t.getColor(fil, i);
             if (fitxa == 0) {
-                res = updateForEmptySpace(res, cont, cont_buides, color_actual, color_aux);
+                res = estabuit(res, cont, cont_buides, color_actual, color_aux);
                 cont_buides++;
                 color_aux = (color_actual != 0) ? color_actual : color_aux;
                 color_actual = 0;
             } else {
-                res = updateForNonEmptySpace(t, fil, i, res, cont, cont_buides, color_actual, color_aux, fitxa);
+                res = noestabuit(t, fil, i, res, cont, cont_buides, color_actual, color_aux, fitxa);
                 if (res == colorJugador * color_actual * HEURISTICA_MAXIMA) {
                     return res;
                 }
@@ -165,32 +165,32 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
             }
 
             if (i == 0 && cont + cont_buides > 3) {
-                res += calculateHeuristicScore(colorJugador, color_actual, cont - 1);
+                res += puntuacioH(colorJugador, color_actual, cont - 1);
             }
         }
         return res;
     }
 
-    private int updateForEmptySpace(int res, int cont, int cont_buides, int color_actual, int color_aux) {
+    private int estabuit(int res, int cont, int cont_buides, int color_actual, int color_aux) {
         if (cont + cont_buides > 3) {
-            res += calculateHeuristicScore(colorJugador, (color_actual != 0) ? color_actual : color_aux, cont - 1);
+            res += puntuacioH(colorJugador, (color_actual != 0) ? color_actual : color_aux, cont - 1);
         }
         return res;
     }
 
-    private int updateForNonEmptySpace(Tauler t, int fil, int i, int res, int cont, int cont_buides, int color_actual, int color_aux, int fitxa) {
+    private int noestabuit(Tauler t, int fil, int i, int res, int cont, int cont_buides, int color_actual, int color_aux, int fitxa) {
         if (fitxa == color_actual) {
             cont++;
             if (cont > 3) {
                 return colorJugador * color_actual * HEURISTICA_MAXIMA;
             }
         } else {
-            res = updateForEmptySpace(res, cont, cont_buides, color_actual, color_aux);
+            res = estabuit(res, cont, cont_buides, color_actual, color_aux);
         }
         return res;
     }
 
-    private int calculateHeuristicScore(int colorJugador, int color, int exponent) {
+    private int puntuacioH(int colorJugador, int color, int exponent) {
         return (int) (colorJugador * color * Math.pow(10.0, exponent));
     }
 
@@ -199,7 +199,7 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
         int res = 0;
         // Evaluate descending diagonals
         for (int col = t.getMida() - 4, fil = 0; fil < t.getMida() - 2; ) {
-            res += evaluateDiagonal(t, col, fil, true);
+            res += eD(t, col, fil, true);
             if (col > 0) {
                 col--;
             } else {
@@ -208,7 +208,7 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
         }
         // Evaluate ascending diagonals
         for (int col = 3, fil = 0; fil < t.getMida() - 2; ) {
-            res += evaluateDiagonal(t, col, fil, false);
+            res += eD(t, col, fil, false);
             if (col < t.getMida() - 1) {
                 col++;
             } else {
@@ -218,14 +218,14 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
         return res;
     }
 
-    private int evaluateDiagonal(Tauler t, int col, int fil, boolean isDescending) {
+    private int eD(Tauler t, int col, int fil, boolean isDescending) {
         int cont_buides = 0, cont = 0, color_actual = 0, res = 0;
         for (int i = 0; (isDescending ? i + col < t.getMida() : col - i >= 0) && i + fil < t.getMida(); i++) {
             int fitxa = t.getColor(fil + i, isDescending ? col + i : col - i);
             if (fitxa == 0) {
                 cont_buides++;
                 if (color_actual != 0 && cont + cont_buides > 3) {
-                    res += calculateHeuristic(colorJugador, color_actual, cont);
+                    res += calcH(colorJugador, color_actual, cont);
                 }
                 color_actual = 0;
             } else {
@@ -236,7 +236,7 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
                     }
                 } else {
                     if (color_actual != 0 && cont + cont_buides > 3) {
-                        res += calculateHeuristic(colorJugador, color_actual, cont);
+                        res += calcH(colorJugador, color_actual, cont);
                     }
                     color_actual = fitxa;
                     cont = 1;
@@ -245,12 +245,12 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
             }
         }
         if (color_actual != 0 && cont + cont_buides > 3) {
-            res += calculateHeuristic(colorJugador, color_actual, cont);
+            res += calcH(colorJugador, color_actual, cont);
         }
         return res;
     }
 
-    private int calculateHeuristic(int colorJugador, int color_actual, int cont) {
+    private int calcH(int colorJugador, int color_actual, int cont) {
         return (int) (colorJugador * color_actual * Math.pow(10.0, cont - 1));
     }
 
@@ -259,10 +259,10 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
             return -HEURISTICA_MAXIMA;
         }
 
-        return profunditat > 0 ? calculateMaxValueWithDepth(t, alfa, beta, profunditat) : avaluarTauler(t);
+        return profunditat > 0 ? maxV(t, alfa, beta, profunditat) : avaluarTauler(t);
     }
 
-    private int calculateMaxValueWithDepth(Tauler t, int alfa, int beta, int profunditat) {
+    private int maxV(Tauler t, int alfa, int beta, int profunditat) {
         Integer valor = -HEURISTICA_MAXIMA - 1;
         for (int i = 0; i < t.getMida(); ++i) {
             if (!t.movpossible(i)) continue;
@@ -285,10 +285,10 @@ private int calculateHeuristic(Integer first, Integer cont, Integer cont_buides)
             return HEURISTICA_MAXIMA;
         }
 
-        return profunditat > 0 ? evaluateWithDepth(t, alfa, beta, profunditat) : avaluarTauler(t);
+        return profunditat > 0 ? eProf(t, alfa, beta, profunditat) : avaluarTauler(t);
     }
 
-    private int evaluateWithDepth(Tauler t, int alfa, int beta, int profunditat) {
+    private int eProf(Tauler t, int alfa, int beta, int profunditat) {
         Integer valor = HEURISTICA_MAXIMA - 1;
         for (int i = 0; i < t.getMida(); i++) {
             if (!t.movpossible(i)) continue;
